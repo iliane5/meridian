@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-const { data: reports, error: reportsError } = await useLazyAsyncData(async () => fetchReports());
-if (reportsError.value) {
-  console.error('Failed to fetch articles', reportsError.value);
-  throw createError({
-    statusCode: 500,
-    statusMessage: 'Failed to fetch articles',
-  });
-}
-useReports().value = reports.value || [];
+// Use onMounted to fetch data on the client side
+onMounted(async () => {
+  try {
+    const reports = await fetchReports();
+    useReports().value = reports || [];
+  } catch (error) {
+    console.error('Failed to fetch articles', error);
+  }
+});
 </script>
 
 <template>

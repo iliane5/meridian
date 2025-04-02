@@ -15,7 +15,8 @@ const reportValidator = z.object({
 });
 
 export async function fetchReports() {
-  const response = await $fetch('/api/reports');
+  const config = useRuntimeConfig();
+  const response = await $fetch(`${config.public.WORKER_API}/api/reports/all`);
   const reports = z.array(reportValidator).parse(response);
   return reports;
 }

@@ -8,6 +8,7 @@ export type Env = {
   // Secrets
   CLOUDFLARE_BROWSER_RENDERING_API_TOKEN: string;
   CLOUDFLARE_ACCOUNT_ID: string;
+  CLOUDFLARE_API_TOKEN: string;
 
   DATABASE_URL: string;
 
@@ -24,7 +25,7 @@ export type Env = {
 
 export default {
   fetch: app.fetch,
-  async scheduled({ cron }: ScheduledController, env: Env, ctx: ExecutionContext) {
+  async scheduled({ cron }: ScheduledController, env: Env) {
     // - Every hour (at minute 4): trigger scrapping of RSS feeds
     if (cron === '4 * * * *') {
       await env.SCRAPE_RSS_FEED.create({ id: crypto.randomUUID() });

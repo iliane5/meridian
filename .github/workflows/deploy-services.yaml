@@ -66,18 +66,20 @@ jobs:
             OPENROUTER_BASE_URL
             DATABASE_URL
             MERIDIAN_SECRET_KEY
+            CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENROUTER_BASE_URL: ${{ secrets.OPENROUTER_BASE_URL }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           MERIDIAN_SECRET_KEY: ${{ secrets.MERIDIAN_SECRET_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Build Nuxt Application
         run: |
           cd apps/frontend
           pnpm build
-        env:
-          NUXT_DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Install Wrangler
         run: pnpm add -w wrangler@3
@@ -86,13 +88,12 @@ jobs:
         run: |
           # Try to create the project first (ignore error if it already exists)
           pnpm wrangler pages project create meridian-frontend --production-branch=main || true
-          
+
           # Deploy the site
           cd apps/frontend
-          pnpm wrangler pages deploy .output/public --project-name=meridian-frontend --branch=main
+          pnpm wrangler pages deploy dist --project-name=meridian-frontend --branch=main
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          NUXT_DATABASE_URL: ${{ secrets.DATABASE_URL }}
       # Replace YOUR_CLOUDFLARE_PAGES_PROJECT_NAME with the actual name from Step 3
-      # The --branch flag tells Cloudflare which production branch this deployment corresponds to 
+      # The --branch flag tells Cloudflare which production branch this deployment corresponds to

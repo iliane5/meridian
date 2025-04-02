@@ -42,4 +42,4 @@ binding = "PROCESS_ARTICLES"
 class_name = "ProcessArticles"
 
 [env.production.vars]
-CORS_ORIGIN = "https://news.espacopessoal.com"
+CORS_ORIGIN = "*"

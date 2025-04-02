@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite';
+import { env } from 'node:process';
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -25,9 +26,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      WORKER_API: 'http://localhost:8787',
+      WORKER_API: 'https://meridian-production.alexandrenf.workers.dev/',
     },
-    DATABASE_URL: '',
   },
 
   devServer: {
@@ -36,12 +36,11 @@ export default defineNuxtConfig({
 
   srcDir: 'src',
 
+  // Configure for client-side rendering with static HTML
+  ssr: false,
   nitro: {
-    prerender: {
-      autoSubfolderIndex: false,
-    },
     output: {
-      publicDir: './dist'
-    }
+      publicDir: './dist',
+    },
   },
 });

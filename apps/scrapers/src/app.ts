@@ -1,8 +1,11 @@
-import { $articles, $sources, and, gte, lte, isNotNull, eq, not } from '@meridian/database';
+import { $articles, $sources, $newsletter, and, gte, lte, isNotNull, eq, not } from '@meridian/database';
 import { Env } from './index';
 import { getDb, hasValidAuthToken } from './lib/utils';
 import { Hono } from 'hono';
 import { trimTrailingSlash } from 'hono/trailing-slash';
+import { cors } from 'hono/cors';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
 import openGraph from './routers/openGraph.router';
 import reportsRouter from './routers/reports.router';
 
@@ -10,10 +13,41 @@ export type HonoEnv = { Bindings: Env };
 
 const app = new Hono<HonoEnv>()
   .use(trimTrailingSlash())
+  .use('/api/*', cors({
+    origin: '*',
+    allowHeaders: ['Authorization', 'Content-Type'],
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    maxAge: 86400,
+  }))
   .get('/favicon.ico', async c => c.notFound()) // disable favicon
   .route('/reports', reportsRouter)
   .route('/openGraph', openGraph)
+  .route('/api/reports', reportsRouter)
   .get('/ping', async c => c.json({ pong: true }))
+  .post('/api/subscribe',
+    zValidator('json', z.object({
+      email: z.string().email(),
+    })),
+    async c => {
+      try {
+        const { email } = c.req.valid('json');
+
+        // Insert email into the newsletter table
+        await getDb(c.env.DATABASE_URL)
+          .insert($newsletter)
+          .values({ email })
+          .onConflictDoNothing();
+
+        return c.json({ success: true, message: 'Successfully subscribed' });
+      } catch (error) {
+        console.error('Database error:', error);
+        return c.json({
+          success: false,
+          message: 'Failed to subscribe'
+        }, 500);
+      }
+    }
+  )
   .get('/events', async c => {
     // require bearer auth token
     const hasValidToken = hasValidAuthToken(c);

@@ -7,15 +7,50 @@ const WORDS_PER_MINUTE = 300;
 const STORAGE_KEY = 'meridian_subscribed';
 
 // Route and brief data extraction
-const slug = useRoute().path.split('/').pop()?.replaceAll('_', '/');
-if (slug === undefined) {
-  throw createError({
-    statusCode: 404,
-    statusMessage: 'Brief not found',
-  });
-}
+const route = useRoute();
+const slug = route.path.split('/').pop()?.replaceAll('_', '/');
+const isLoading = ref(true);
+const notFound = ref(false);
 
-const briefData = getReportBySlug(slug);
+// Use ref for briefData instead of toRef from getReportBySlug
+const briefData = ref(null);
+
+// Load brief data on client side
+onMounted(async () => {
+  if (slug === undefined) {
+    notFound.value = true;
+    isLoading.value = false;
+    return;
+  }
+
+  // Wait for reports to be loaded
+  await nextTick();
+  const reports = useReports();
+
+  // Try to find the report by slug
+  if (reports.value.length > 0) {
+    const match = reports.value.find(report => report.slug === slug);
+    if (match) {
+      briefData.value = match;
+    } else {
+      notFound.value = true;
+    }
+  } else {
+    // If no reports yet, wait a bit and try again
+    setTimeout(() => {
+      const match = reports.value.find(report => report.slug === slug);
+      if (match) {
+        briefData.value = match;
+      } else {
+        notFound.value = true;
+      }
+      isLoading.value = false;
+    }, 2000);
+    return;
+  }
+
+  isLoading.value = false;
+});
 
 const url = ref(`/`);
 
@@ -31,22 +66,36 @@ const hasSubscribed = ref(false);
 /**
  * Calculates estimated reading time in minutes
  */
-const estimateReadingTime = (content: string): number => {
+const estimateReadingTime = (content?: string): number => {
+  if (!content) return 0;
   const wordCount = content.trim().split(/\s+/).length;
   return Math.ceil(wordCount / WORDS_PER_MINUTE);
 };
 
 // SEO metadata
 const formatDate = computed(() => {
+  if (!briefData.value || !briefData.value.date) return '';
   const date = briefData.value.date;
-  return date ? `${date.month.toLowerCase()} ${date.day}, ${date.year}` : '';
+  return `${date.month.toLowerCase()} ${date.day}, ${date.year}`;
 });
 
-useSEO({
-  title: `${briefData.value.title.toLowerCase()} | meridian`,
-  description: `brief for ${formatDate.value}`,
-  ogImage: `${config.public.WORKER_API}/openGraph/brief?title=${encodeURIComponent(briefData.value.title)}&date=${encodeURIComponent(briefData.value.createdAt.getTime())}&articles=${briefData.value.usedArticles}&sources=${briefData.value.usedSources}`,
-  ogUrl: `https://news.iliane.xyz/briefs/${slug}`,
+// Update SEO when brief data is loaded
+watchEffect(() => {
+  if (briefData.value) {
+    useSEO({
+      title: `${briefData.value.title.toLowerCase()} | meridian`,
+      description: `brief for ${formatDate.value}`,
+      ogImage: `${config.public.WORKER_API}/openGraph/brief?title=${encodeURIComponent(briefData.value.title)}&date=${encodeURIComponent(briefData.value.createdAt.getTime())}&articles=${briefData.value.usedArticles}&sources=${briefData.value.usedSources}`,
+      ogUrl: `https://news.iliane.xyz/briefs/${slug}`,
+    });
+  } else {
+    useSEO({
+      title: `brief | meridian`,
+      description: `daily brief of everything important happening`,
+      ogImage: `${config.public.WORKER_API}/openGraph/default`,
+      ogUrl: `https://news.iliane.xyz/briefs/${slug || ''}`,
+    });
+  }
 });
 
 // Lifecycle hooks
@@ -75,7 +124,7 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
 
   try {
-    const response = await $fetch('/api/subscribe', {
+    const response = await $fetch(`${config.public.WORKER_API}/api/subscribe`, {
       method: 'POST',
       body: { email: email.value },
     });
@@ -102,24 +151,38 @@ const handleChangeEmail = () => {
 </script>
 
 <template>
-  <!-- Reading progress bar -->
-  <div class="fixed top-0 left-0 w-full h-1 z-50">
-    <div class="h-full bg-black transition-all duration-150 ease-out" :style="{ width: `${readingProgress}%` }" />
+  <!-- Loading state -->
+  <div v-if="isLoading" class="py-12 text-center">
+    <p class="text-xl">Loading brief...</p>
   </div>
 
-  <div>
-    <header class="mb-8">
-      <h1 class="text-4xl font-bold mb-3">
-        {{ briefData.title.toLowerCase() }}
-      </h1>
-      <div class="flex text-sm text-gray-600 items-center space-x-2">
-        <time>{{ briefData.date?.month.toLowerCase() }} {{ briefData.date?.day }}, {{ briefData.date?.year }}</time>
-        <span>•</span>
-        <p>{{ estimateReadingTime(briefData.content) }} min read</p>
-      </div>
-    </header>
+  <!-- Not found state -->
+  <div v-else-if="notFound" class="py-12 text-center">
+    <h2 class="text-2xl font-bold mb-4">Brief not found</h2>
+    <p class="mb-6">We couldn't find the brief you're looking for.</p>
+    <NuxtLink to="/briefs" class="underline">View all briefs</NuxtLink>
+  </div>
 
-    <article class="prose" v-html="$md.render(briefData.content)" />
+  <!-- Brief content -->
+  <template v-else-if="briefData">
+    <!-- Reading progress bar -->
+    <div class="fixed top-0 left-0 w-full h-1 z-50">
+      <div class="h-full bg-black transition-all duration-150 ease-out" :style="{ width: `${readingProgress}%` }" />
+    </div>
+
+    <div>
+      <header class="mb-8">
+        <h1 class="text-4xl font-bold mb-3">
+          {{ briefData.title.toLowerCase() }}
+        </h1>
+        <div class="flex text-sm text-gray-600 items-center space-x-2">
+          <time>{{ briefData.date?.month.toLowerCase() }} {{ briefData.date?.day }}, {{ briefData.date?.year }}</time>
+          <span>•</span>
+          <p>{{ estimateReadingTime(briefData.content) }} min read</p>
+        </div>
+      </header>
+
+      <article class="prose" v-html="$md.render(briefData.content)" />
 
     <div class="mt-16 mb-8">
       <div class="h-px w-full bg-gray-300 mb-8" />
@@ -176,4 +239,5 @@ const handleChangeEmail = () => {
       </div>
     </div>
   </div>
+  </template>
 </template>

@@ -73,19 +73,18 @@ jobs:
           MERIDIAN_SECRET_KEY: ${{ secrets.MERIDIAN_SECRET_KEY }}
 
       - name: Build Nuxt Application
-        run: pnpm build --filter=@meridian/frontend # Or 'yarn generate', ensure this matches your static build script in package.json (npx nuxi generate)
+        run: pnpm build --filter=@meridian/frontend
         env:
           NUXT_DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      - name: Install Wrangler
+        run: pnpm add -w wrangler@3
+
       - name: Publish to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3 # Use the official Cloudflare Wrangler action
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }} # Use the secret token
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }} # Use the secret account ID
-          command: pages deploy apps/frontend/dist --project-name=meridian-frontend --branch=main
-          secrets: |
-            NUXT_DATABASE_URL
+        run: pnpm wrangler pages deploy apps/frontend/dist --project-name=meridian-frontend --branch=main
         env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           NUXT_DATABASE_URL: ${{ secrets.DATABASE_URL }}
       # Replace YOUR_CLOUDFLARE_PAGES_PROJECT_NAME with the actual name from Step 3
       # The --branch flag tells Cloudflare which production branch this deployment corresponds to 

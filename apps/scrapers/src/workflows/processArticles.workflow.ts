@@ -1,14 +1,13 @@
 import getArticleAnalysisPrompt, { articleAnalysisSchema } from '../prompts/articleAnalysis.prompt';
 import { $articles, and, eq, gte, isNull, sql } from '@meridian/database';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { Env } from '../index';
-import { generateObject } from 'ai';
 import { getArticleWithBrowser, getArticleWithFetch } from '../lib/puppeteer';
 import { getDb } from '../lib/utils';
 import { WorkflowEntrypoint, WorkflowStep, WorkflowEvent, WorkflowStepConfig } from 'cloudflare:workers';
 import { err, ok } from 'neverthrow';
 import { ResultAsync } from 'neverthrow';
 import { DomainRateLimiter } from '../lib/rateLimiter';
+import OpenAI from 'openai';
 
 const dbStepConfig: WorkflowStepConfig = {
   retries: { limit: 3, delay: '1 second', backoff: 'linear' },
@@ -19,8 +18,13 @@ const dbStepConfig: WorkflowStepConfig = {
 export class ProcessArticles extends WorkflowEntrypoint<Env, Params> {
   async run(_event: WorkflowEvent<Params>, step: WorkflowStep) {
     const env = this.env;
-    const db = getDb(env);
-    const google = createGoogleGenerativeAI({ apiKey: env.GOOGLE_API_KEY, baseURL: env.GOOGLE_BASE_URL });
+    const db = getDb(env.DATABASE_URL);
+
+    // Initialize OpenRouter client
+    const openai = new OpenAI({
+      apiKey: env.OPENROUTER_API_KEY,
+      baseURL: env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1',
+    });
 
     async function getUnprocessedArticles(opts: { limit?: number }) {
       const articles = await db
@@ -151,13 +155,22 @@ export class ProcessArticles extends WorkflowEntrypoint<Env, Params> {
             timeout: '1 minute',
           },
           async () => {
-            const response = await generateObject({
-              model: google('gemini-2.0-flash'),
+            const response = await openai.chat.completions.create({
+              model: 'anthropic/claude-3-haiku',
               temperature: 0,
-              prompt: getArticleAnalysisPrompt(article.title, article.text),
-              schema: articleAnalysisSchema,
+              messages: [
+                {
+                  role: 'user',
+                  content: getArticleAnalysisPrompt(article.title, article.text)
+                }
+              ],
+              response_format: { type: 'json_object' }
             });
-            return response.object;
+
+            // Parse the JSON response
+            const content = response.choices[0].message.content || '{}';
+            const jsonResponse = JSON.parse(content);
+            return articleAnalysisSchema.parse(jsonResponse);
           }
         );
 

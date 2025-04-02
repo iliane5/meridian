@@ -19,7 +19,10 @@ binding = "PROCESS_ARTICLES"
 class_name = "ProcessArticles"
 
 [vars]
-CORS_ORIGIN = "http://127.0.0.1:3000"
+CORS_ORIGIN = "*"
+
+# Load environment variables from .env file
+# These will be overridden by actual environment variables if they exist
 
 [triggers]
 # Schedule cron triggers:
@@ -39,4 +42,4 @@ binding = "PROCESS_ARTICLES"
 class_name = "ProcessArticles"
 
 [env.production.vars]
-CORS_ORIGIN = "https://news.iliane.xyz"
+CORS_ORIGIN = "https://news.espacopessoal.com"

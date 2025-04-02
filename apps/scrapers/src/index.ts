@@ -11,8 +11,13 @@ export type Env = {
 
   DATABASE_URL: string;
 
+  // Google API (legacy)
   GOOGLE_API_KEY: string;
   GOOGLE_BASE_URL: string;
+
+  // OpenRouter API
+  OPENROUTER_API_KEY: string;
+  OPENROUTER_BASE_URL: string;
 
   MERIDIAN_SECRET_KEY: string;
 };

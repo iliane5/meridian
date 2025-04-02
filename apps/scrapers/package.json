@@ -32,6 +32,7 @@
     "hono": "^4.7.4",
     "linkedom": "^0.18.9",
     "neverthrow": "^8.2.0",
+    "openai": "^4.91.1",
     "workers-og": "^0.0.25",
     "zod": "^3.24.2"
   }

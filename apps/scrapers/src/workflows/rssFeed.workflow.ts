@@ -25,7 +25,7 @@ const dbStepConfig: WorkflowStepConfig = {
 // Takes in a rss feed URL, parses the feed & stores the data in our database.
 export class ScrapeRssFeed extends WorkflowEntrypoint<Env, Params> {
   async run(_event: WorkflowEvent<Params>, step: WorkflowStep) {
-    const db = getDb(this.env);
+    const db = getDb(this.env.DATABASE_URL);
 
     // Fetch all sources
     const feeds = await step.do('get feeds', dbStepConfig, async () => {

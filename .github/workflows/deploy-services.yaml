@@ -88,4 +88,4 @@ jobs:
       #   env:
       #     NUXT_DATABASE_URL: ${{ secrets.DATABASE_URL }}
       # Replace YOUR_CLOUDFLARE_PAGES_PROJECT_NAME with the actual name from Step 3
-      # The --branch flag tells Cloudflare which production branch this deployment corresponds to
+      # The --branch flag tells Cloudflare which production branch this deployment corresponds to 

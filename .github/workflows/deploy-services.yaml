@@ -77,15 +77,15 @@ jobs:
         env:
           NUXT_DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      # - name: Publish to Cloudflare Pages
-      #   uses: cloudflare/wrangler-action@v3 # Use the official Cloudflare Wrangler action
-      #   with:
-      #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }} # Use the secret token
-      #     accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }} # Use the secret account ID
-      #     command: pages deploy apps/frontend/dist --project-name=meridian-frontend --branch=main
-      #     secrets: |
-      #       NUXT_DATABASE_URL
-      #   env:
-      #     NUXT_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3 # Use the official Cloudflare Wrangler action
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }} # Use the secret token
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }} # Use the secret account ID
+          command: pages deploy apps/frontend/dist --project-name=meridian-frontend --branch=main
+          secrets: |
+            NUXT_DATABASE_URL
+        env:
+          NUXT_DATABASE_URL: ${{ secrets.DATABASE_URL }}
       # Replace YOUR_CLOUDFLARE_PAGES_PROJECT_NAME with the actual name from Step 3
       # The --branch flag tells Cloudflare which production branch this deployment corresponds to 

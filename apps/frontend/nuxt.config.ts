@@ -40,5 +40,8 @@ export default defineNuxtConfig({
     prerender: {
       autoSubfolderIndex: false,
     },
+    output: {
+      publicDir: './dist'
+    }
   },
 });

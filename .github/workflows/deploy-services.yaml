@@ -73,7 +73,9 @@ jobs:
           MERIDIAN_SECRET_KEY: ${{ secrets.MERIDIAN_SECRET_KEY }}
 
       - name: Build Nuxt Application
-        run: pnpm build --filter=@meridian/frontend
+        run: |
+          cd apps/frontend
+          pnpm build
         env:
           NUXT_DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
@@ -86,7 +88,8 @@ jobs:
           pnpm wrangler pages project create meridian-frontend --production-branch=main || true
           
           # Deploy the site
-          pnpm wrangler pages deploy apps/frontend/dist --project-name=meridian-frontend --branch=main
+          cd apps/frontend
+          pnpm wrangler pages deploy .output/public --project-name=meridian-frontend --branch=main
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

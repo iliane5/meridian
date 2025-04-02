@@ -80,8 +80,13 @@ jobs:
       - name: Install Wrangler
         run: pnpm add -w wrangler@3
 
-      - name: Publish to Cloudflare Pages
-        run: pnpm wrangler pages deploy apps/frontend/dist --project-name=meridian-frontend --branch=main
+      - name: Create and Deploy to Cloudflare Pages
+        run: |
+          # Try to create the project first (ignore error if it already exists)
+          pnpm wrangler pages project create meridian-frontend --production-branch=main || true
+          
+          # Deploy the site
+          pnpm wrangler pages deploy apps/frontend/dist --project-name=meridian-frontend --branch=main
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

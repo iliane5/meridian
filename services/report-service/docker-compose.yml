@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  report-service:
+    image: <username>/report-service
+    ports:
+      - '5000:5000'
+    volumes:
+      - .:/app
+    restart: unless-stopped

@@ -1,0 +1,12 @@
+openai>=1.0.0
+python-dotenv>=1.0.0
+requests>=2.30.0
+pandas>=2.0.0
+numpy>=1.25.0
+umap-learn>=0.5.3
+hdbscan>=0.8.29
+scikit-learn>=1.2.0
+matplotlib>=3.7.0
+ipykernel>=6.24.0
+jupyter>=1.0.0
+sentence-transformers>=2.2.0

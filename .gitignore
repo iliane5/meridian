@@ -190,7 +190,7 @@ apps/scrapers/feeds.json
 
 __pycache__
 
-apps/briefs
+#apps/briefs
 
 # python stuff
 .mypy_cache
@@ -205,3 +205,7 @@ MAIN_LIST.JSON
 NOTES.MD
 SETUP.MD
 TODO.MD
+
+# Additional ignores
+venv/
+wrangler.txt

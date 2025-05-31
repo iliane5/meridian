@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  report-service:
+    image: pmckelvy/report-service
+    ports:
+      - '5000:5000'
+    volumes:
+      - .:/app
+    environment:
+      - MERIDIAN_SECRET_KEY=${MERIDIAN_SECRET_KEY}
+      - API_TOKEN=${API_TOKEN}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - CLOUDFLARE_BUCKET_ACCOUNT=${CLOUDFLARE_BUCKET_ACCOUNT}
+      - CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}
+      - CLOUDFLARE_ACCESS_KEY_ID=${CLOUDFLARE_ACCESS_KEY_ID}
+      - CLOUDFLARE_SECRET_ACCESS_KEY=${CLOUDFLARE_SECRET_ACCESS_KEY}
+      - CLOUDFLARE_R2_BUCKET=${CLOUDFLARE_R2_BUCKET}
+    restart: unless-stopped

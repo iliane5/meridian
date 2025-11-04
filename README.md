@@ -1,5 +1,7 @@
 # Meridian: Your Personal Intelligence Agency
 
+[English](./README.md) | [简体中文](./README.zh-CN.md)
+
 [![Build Status](https://img.shields.io/github/actions/workflow/status/iliane5/meridian/deploy-services.yaml?branch=main)](https://github.com/iliane5/meridian/actions/workflows/deploy-services.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

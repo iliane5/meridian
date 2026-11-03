@@ -70,7 +70,11 @@ graph TD
 
 ## Setup
 
-**Prerequisites**: Node.js v22+, pnpm v9.15+, Python 3.10+, PostgreSQL, Cloudflare account, Google AI API key
+**Prerequisites**: Node.js 22.23.4, pnpm 9.15.4, Python 3.10+, PostgreSQL, Cloudflare account, Google AI API key
+
+Run `nvm install` and `nvm use` in the checkout to select `.nvmrc`. CI reads the
+same pin. This Node release includes the October 2026 security and certificate-trust
+fixes; keep the pin on a supported, security-patched release when updating it.
 
 ```bash
 git clone https://github.com/iliane5/meridian.git
